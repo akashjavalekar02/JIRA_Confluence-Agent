@@ -1,0 +1,63 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>Start: Meeting Notes Input</p>]):::first
+	process_meeting(📝 Process Meeting Workflow)
+	summarize(🤖 Summarize Meeting Notes<br/>Extract Issues & Action Items)
+	jira_creation(🎫 Create JIRA Tickets<br/>Categorize by Type & Priority)
+	confluence_update(📚 Update Confluence<br/>Meeting Summary & Links)
+	__end__([<p>✅ Complete: Tickets & Documentation</p>]):::last
+	
+	%% Main workflow
+	__start__ --> process_meeting
+	process_meeting --> summarize
+	summarize --> jira_creation
+	jira_creation --> confluence_update
+	confluence_update --> __end__
+	
+	%% Sub-processes
+	ai_analysis(🔍 AI Analysis<br/>GPT-4o-mini)
+	issue_extract(📋 Extract Issues<br/>Bug/Task/Story/Epic)
+	priority_assign(⚡ Assign Priorities<br/>High/Medium/Low)
+	
+	summarize --> ai_analysis
+	ai_analysis --> issue_extract
+	issue_extract --> priority_assign
+	priority_assign --> jira_creation
+	
+	%% JIRA Integration
+	jira_auth(🔑 JIRA Authentication<br/>API Token)
+	ticket_create(🎟️ Create Tickets<br/>ADF Format)
+	
+	jira_creation --> jira_auth
+	jira_auth --> ticket_create
+	
+	%% Confluence Integration
+	conf_auth(🔐 Confluence Auth<br/>API Token)
+	page_create(📄 Create Page<br/>With JIRA Links)
+	
+	confluence_update --> conf_auth
+	conf_auth --> page_create
+	
+	%% Output
+	output_summary(📊 Output Results<br/>Summary, Tickets, Page URL)
+	page_create --> output_summary
+	ticket_create --> output_summary
+	output_summary --> __end__
+	
+	%% Styling
+	classDef default fill:#f2f0ff,line-height:1.2,font-size:11px
+	classDef first fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+	classDef last fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+	classDef ai fill:#fff3e0,stroke:#ef6c00
+	classDef jira fill:#e3f2fd,stroke:#1976d2
+	classDef confluence fill:#f3e5f5,stroke:#7b1fa2
+	classDef process fill:#fff8e1,stroke:#f57f17
+	
+	class summarize,ai_analysis,issue_extract,priority_assign ai
+	class jira_creation,jira_auth,ticket_create jira
+	class confluence_update,conf_auth,page_create confluence
+	class process_meeting,output_summary process

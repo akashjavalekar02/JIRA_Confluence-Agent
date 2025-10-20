@@ -1,0 +1,63 @@
+{
+    "entryPoints": [
+        {
+            "filePath": "agent",
+            "uniqueId": "ffdce508-e97d-4a62-a8c3-642416c640c7",
+            "type": "agent",
+            "input": {
+                "type": "object",
+                "properties": {
+                    "meeting_notes": {
+                        "title": "Meeting Notes",
+                        "type": "string",
+                        "description": "The raw meeting notes to be processed and analyzed"
+                    },
+                    "meeting_title": {
+                        "title": "Meeting Title",
+                        "type": "string",
+                        "description": "Optional title for the meeting",
+                        "default": null
+                    }
+                },
+                "required": [
+                    "meeting_notes"
+                ]
+            },
+            "output": {
+                "type": "object",
+                "properties": {
+                    "meeting_summary": {
+                        "title": "Meeting Summary", 
+                        "type": "string",
+                        "description": "AI-generated summary of the meeting"
+                    },
+                    "extracted_issues": {
+                        "title": "Extracted Issues",
+                        "type": "array",
+                        "description": "List of issues/action items extracted from the meeting"
+                    },
+                    "jira_tickets": {
+                        "title": "JIRA Tickets",
+                        "type": "array",
+                        "description": "List of created JIRA ticket IDs"
+                    },
+                    "confluence_page_url": {
+                        "title": "Confluence Page URL",
+                        "type": "string",
+                        "description": "URL of the created/updated Confluence page"
+                    },
+                    "status": {
+                        "title": "Status",
+                        "type": "string", 
+                        "description": "Processing status (Success/Error)"
+                    }
+                },
+                "required": ["meeting_summary", "extracted_issues", "jira_tickets", "confluence_page_url", "status"]
+            }
+        }
+    ],
+    "bindings": {
+        "version": "2.0",
+        "resources": []
+    }
+}
