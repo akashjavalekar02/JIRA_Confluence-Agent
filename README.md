@@ -1,188 +1,95 @@
-# Meeting Notes Processor Agent
+# Meeting Notes JIRA Agent
 
-This UiPath coded agent processes meeting notes, extracts actionable items, creates JIRA tickets, and updates Confluence documentation.
+A UiPath Coded Agent that processes meeting notes using OpenAI LLM to extract key information and automatically creates JIRA tickets via UiPath MCP server.
 
 ## Features
 
-- **Meeting Summarization**: Uses AI to analyze and summarize meeting notes
-- **Issue Extraction**: Automatically identifies and categorizes issues, tasks, and action items
-- **JIRA Integration**: Creates JIRA tickets for extracted issues with proper categorization
-- **Confluence Integration**: Updates Confluence with meeting summaries and linked JIRA tickets
-- **Smart Classification**: Classifies issues by type (Bug, Task, Story, Epic, Improvement) and priority
+- **AI-Powered Extraction**: Uses OpenAI GPT-4o-mini to intelligently extract:
+  - Summary (single line, max 100 characters)
+  - Description (detailed, max 200 characters) 
+  - Issue Type (Task, Bug, Story, Epic)
 
-## Setup
+- **JIRA Integration**: Creates tickets via UiPath MCP server with `jIRA_IssueAutomation` tool
 
-### 1. Environment Variables
+- **Environment Configuration**: Loads all settings from `.env` file including MCP server URL
 
-Configure your environment by updating the `.env` file:
+- **Error Handling**: Robust fallback mechanisms and retry logic
 
-#### Required (Already configured)
-```properties
-OPENAI_API_KEY=your-openai-api-key
-UIPATH_ACCESS_TOKEN=your-uipath-token
+## Deployment to UiPath Orchestrator
+
+### Required Files
+
+1. **main.py** - Main agent logic with async processing
+2. **pyproject.toml** - Python dependencies and project configuration
+3. **uipath.json** - UiPath agent configuration with input/output parameters
+4. **langgraph.json** - LangGraph workflow definition
+5. **.env** - Environment variables configuration
+
+### Environment Variables
+
+Configure these in UiPath Orchestrator:
+
+```env
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key
+
+# UiPath MCP Server Configuration  
+UIPATH_ACCESS_TOKEN=your_uipath_access_token
+UIPATH_MCP_URL=https://your-mcp-server-url/mcp/endpoint
+
+# JIRA Configuration
+DEFAULT_JIRA_PROJECT=Jira-Test Project
 ```
 
-#### Optional (For JIRA Integration)
-Uncomment and configure these in your `.env` file:
-```properties
-JIRA_URL=https://your-domain.atlassian.net
-JIRA_USERNAME=your-email@example.com
-JIRA_API_TOKEN=your-jira-api-token
-JIRA_PROJECT_KEY=PROJ
+### Input Parameters
+
+- **meeting_notes** (string, required): Raw meeting notes text to process
+
+### Output Parameters
+
+- **summary** (string): Extracted JIRA ticket summary
+- **description** (string): Extracted JIRA ticket description  
+- **issue_type** (string): Extracted issue type (Task, Bug, Story, Epic)
+- **jira_key** (string): Created JIRA ticket key (e.g., JTP-53)
+- **status** (string): Processing status (Success/Failed/Error)
+- **project** (string): JIRA project name used
+
+## Usage Example
+
+Input:
+```
+"Discussed Search API pagination. Backend builds index, frontend adds filters, QA validates endpoints"
 ```
 
-#### Optional (For Confluence Integration)
-Uncomment and configure these in your `.env` file:
-```properties
-CONFLUENCE_URL=https://your-domain.atlassian.net/wiki
-CONFLUENCE_USERNAME=your-email@example.com
-CONFLUENCE_API_TOKEN=your-confluence-api-token
-CONFLUENCE_SPACE=MEET
-```
-
-### 2. JIRA API Token Setup
-
-1. Go to [Atlassian Account Settings](https://id.atlassian.com/manage-profile/security/api-tokens)
-2. Click "Create API token"
-3. Copy the token and add it to your `.env` file
-
-### 3. Confluence API Token Setup
-
-Use the same API token as JIRA (they share the same authentication system).
-
-## Usage
-
-### Input Format
-
-The agent expects meeting notes in the following format in `input.json`:
-
+Output:
 ```json
 {
-  "meeting_notes": "Your meeting notes content here...",
-  "meeting_title": "Optional meeting title"
+  "summary": "Implement Search API pagination feature",
+  "description": "Backend builds index, frontend adds filters, QA validates endpoints for search functionality",
+  "issue_type": "Task", 
+  "jira_key": "JTP-53",
+  "status": "Success",
+  "project": "Jira-Test Project"
 }
 ```
 
-### Example Input
+## Testing
 
-```json
-{
-  "meeting_notes": "Meeting Notes - Project Alpha Review\\n\\n1. Project Status:\\n   - Backend API development is 80% complete\\n   - Frontend development is delayed by 2 weeks\\n\\n2. Issues Identified:\\n   - Login API throwing 500 errors (Priority: High)\\n   - Dashboard loading slowly (>5 seconds)\\n   - Mobile app crashes on iOS\\n\\n3. Action Items:\\n   - Fix database optimization\\n   - Deploy hotfix by Friday",
-  "meeting_title": "Project Alpha Review - January 2025"
-}
-```
-
-### Running the Agent
-
-```powershell
-uipath run agent --file input.json
-```
-
-## Output
-
-The agent provides:
-
-- **Meeting Summary**: AI-generated concise summary of the meeting
-- **Extracted Issues**: List of identified issues with:
-  - Summary (brief title)
-  - Detailed description
-  - Issue type (Bug, Task, Story, Epic, Improvement)
-  - Priority level (Highest, High, Medium, Low, Lowest)
-- **JIRA Tickets**: List of created JIRA ticket IDs
-- **Confluence Page**: URL to the created/updated Confluence page
-- **Status**: Success/Error status with details
-
-## Workflow
-
-1. **Analysis**: AI analyzes the meeting notes to extract key information
-2. **Issue Extraction**: Identifies actionable items and categorizes them
-3. **JIRA Creation**: Creates JIRA tickets for each identified issue
-4. **Confluence Update**: Creates a Confluence page with:
-   - Meeting summary
-   - List of action items linked to JIRA tickets
-   - Issue priorities and types
-
-## Demo Mode
-
-When JIRA/Confluence credentials are not configured, the agent runs in demo mode:
-- Creates mock JIRA ticket IDs (JIRA-MOCK-001, etc.)
-- Returns mock Confluence URLs
-- Still performs AI analysis and issue extraction
-
-## Issue Types Supported
-
-- **Bug**: Software defects or errors
-- **Task**: General work items or to-dos
-- **Story**: User stories or features
-- **Epic**: Large work items spanning multiple sprints
-- **Improvement**: Enhancements to existing functionality
-
-## Priority Levels
-
-- **Highest**: Critical issues requiring immediate attention
-- **High**: Important issues to be addressed soon
-- **Medium**: Standard priority items
-- **Low**: Nice-to-have improvements
-- **Lowest**: Future considerations
-
-## Troubleshooting
-
-### Common Issues
-
-1. **"JIRA credentials not configured"**
-   - Solution: Add JIRA configuration to `.env` file or use demo mode
-
-2. **"Failed to create JIRA ticket: 400"**
-   - Check JIRA URL format
-   - Verify API token is valid
-   - Ensure project key exists and you have permissions
-
-3. **OpenAI API errors**
-   - Verify OPENAI_API_KEY is valid
-   - Check API quota limits
-
-### Logs
-
-The agent outputs detailed logs showing:
-- HTTP requests to OpenAI, JIRA, and Confluence
-- Success/failure status for each operation
-- Created ticket IDs and page URLs
+The agent has been successfully tested and created JIRA ticket JTP-53 with the above input.
 
 ## Dependencies
 
-- `langchain-openai`: OpenAI integration
-- `requests`: HTTP requests for JIRA/Confluence APIs
-- `pydantic`: Data validation
-- `uipath-langchain`: UiPath integration
+- openai>=1.0.0
+- httpx>=0.25.0  
+- python-dotenv>=1.0.0
+- langgraph>=0.1.0
+- langchain>=0.1.0
 
-## File Structure
+## Architecture
 
-```
-CodedAgent/
-├── main.py           # Main agent logic
-├── input.json        # Input meeting notes
-├── .env              # Environment variables
-├── pyproject.toml    # Project configuration
-├── langgraph.json    # LangGraph configuration
-├── uipath.json       # UiPath agent definition
-└── README.md         # This file
-```
+1. **Input Handler**: Receives meeting notes from UiPath Orchestrator
+2. **LLM Processing**: Uses OpenAI to extract structured data
+3. **JIRA Creation**: Calls UiPath MCP server to create ticket
+4. **Output Handler**: Returns results to Orchestrator
 
-## Example Output
-
-```json
-{
-  "meeting_summary": "Project Alpha review meeting discussed current development status...",
-  "extracted_issues": [
-    {
-      "summary": "Fix login API 500 errors",
-      "description": "Login API is throwing 500 errors intermittently...",
-      "issue_type": "Bug",
-      "priority": "High"
-    }
-  ],
-  "jira_tickets": ["PROJ-123", "PROJ-124"],
-  "confluence_page_url": "https://your-domain.atlassian.net/wiki/pages/viewpage.action?pageId=123456",
-  "status": "Success"
-}
-```
+The agent follows LangGraph workflow patterns with proper state management and error handling.

@@ -2,62 +2,83 @@
     "entryPoints": [
         {
             "filePath": "agent",
-            "uniqueId": "ffdce508-e97d-4a62-a8c3-642416c640c7",
+            "uniqueId": "28c5ddb9-ffa3-44e3-9a23-eb265d6f10c1",
             "type": "agent",
             "input": {
                 "type": "object",
                 "properties": {
                     "meeting_notes": {
-                        "title": "Meeting Notes",
                         "type": "string",
-                        "description": "The raw meeting notes to be processed and analyzed"
+                        "description": "Raw meeting notes text to process"
                     },
                     "meeting_title": {
-                        "title": "Meeting Title",
                         "type": "string",
-                        "description": "Optional title for the meeting",
-                        "default": null
+                        "description": "Optional title of the meeting"
                     }
                 },
-                "required": [
-                    "meeting_notes"
-                ]
+                "required": ["meeting_notes"]
             },
             "output": {
                 "type": "object",
                 "properties": {
                     "meeting_summary": {
-                        "title": "Meeting Summary", 
                         "type": "string",
-                        "description": "AI-generated summary of the meeting"
+                        "description": "Extracted meeting summary"
                     },
                     "extracted_issues": {
-                        "title": "Extracted Issues",
                         "type": "array",
-                        "description": "List of issues/action items extracted from the meeting"
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "summary": {"type": "string"},
+                                "description": {"type": "string"},
+                                "issue_type": {"type": "string"},
+                                "priority": {"type": "string"}
+                            }
+                        },
+                        "description": "List of extracted issues from meeting"
                     },
                     "jira_tickets": {
-                        "title": "JIRA Tickets",
                         "type": "array",
-                        "description": "List of created JIRA ticket IDs"
+                        "items": {"type": "string"},
+                        "description": "List of created JIRA ticket keys"
                     },
-                    "confluence_page_url": {
-                        "title": "Confluence Page URL",
-                        "type": "string",
-                        "description": "URL of the created/updated Confluence page"
+                    "confluence_pages": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of created Confluence page URLs"
                     },
                     "status": {
-                        "title": "Status",
-                        "type": "string", 
-                        "description": "Processing status (Success/Error)"
+                        "type": "string",
+                        "description": "Processing status (Success/Failed/Error)"
+                    },
+                    "total_tickets": {
+                        "type": "integer",
+                        "description": "Total number of JIRA tickets created"
+                    },
+                    "total_pages": {
+                        "type": "integer",
+                        "description": "Total number of Confluence pages created"
                     }
                 },
-                "required": ["meeting_summary", "extracted_issues", "jira_tickets", "confluence_page_url", "status"]
+                "required": ["meeting_summary", "extracted_issues", "jira_tickets", "confluence_pages", "status", "total_tickets", "total_pages"]
             }
         }
     ],
     "bindings": {
         "version": "2.0",
-        "resources": []
+        "resources": [],
+        "environmentVariables": {
+            "UIPATH_TELEMETRY_ENABLED": "true",
+            "UIPATH_TRACE_LEVEL": "INFO",
+            "AZURE_MONITOR_DISABLED": "true",
+            "OPENTELEMETRY_SDK_DISABLED": "true",
+            "OTEL_SDK_DISABLED": "true",
+            "OTEL_TRACES_EXPORTER": "none",
+            "OTEL_METRICS_EXPORTER": "none",
+            "OTEL_LOGS_EXPORTER": "none",
+            "AZURE_MONITOR_CONNECTION_STRING": "",
+            "APPLICATIONINSIGHTS_CONNECTION_STRING": ""
+        }
     }
 }
