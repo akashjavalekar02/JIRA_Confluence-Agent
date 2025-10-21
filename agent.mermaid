@@ -1,160 +1,22 @@
 graph TD
-    A[Start: Meeting Notes Input] --> B[🚀 WORKFLOW_START Trace]
-    B --> C[Initialize Environment & Telemetry]
-    C --> D[Load Configuration & Tokens]
-    D --> E{Configuration Valid?}
+    A[📝 Meeting Notes Input] --> B[🤖 OpenAI LLM Analysis]
+    B --> C[🎯 Classify & Extract JIRA Issues]
+    C --> D[📡 UiPath MCP Server Call]
+    D --> E[🎫 Create JIRA Tickets]
+    D --> F[📄 Update Confluence Pages]
+    E --> G[✅ Dual Output Results]
+    F --> G
+    G --> H[📊 Success: JIRA + Confluence Created]
     
-    E -->|Valid| F[📝 Step 1: LLM Analysis]
-    E -->|Invalid| G[❌ Configuration Error]
+    %% Clean Styling
+    classDef input fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef llm fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+    classDef mcp fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef output fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef success fill:#e8f5e8,stroke:#2e7d32,stroke-width:3px
     
-    F --> H[OpenAI GPT-4o-mini Processing]
-    H --> I[Extract Multiple Issues & Metadata]
-    I --> J[🔍 LLM_ANALYSIS_COMPLETE Trace]
-    J --> K{Issues Found?}
-    
-    K -->|Yes| L[🎫 Step 2: Create JIRA & Confluence]
-    K -->|No Issues| M[Empty Results]
-    
-    L --> N[For Each Extracted Issue]
-    N --> O[Build MCP Payloads - Direct & JSON-RPC]
-    O --> P[Call UiPath MCP Server - Multiple Attempts]
-    P --> Q{MCP Success?}
-    
-    Q -->|Success| R[✅ Parse Dual Output]
-    Q -->|500 Error| S[Retry with JSON-RPC Format]
-    Q -->|401 Error| T[Authentication Failed - Skip]
-    Q -->|Other Error| U[Log Error & Continue]
-    
-    R --> R1[Extract JIRA Key - JTP-XX]
-    R --> R2[Extract Confluence URL]
-    R1 --> V[Store Real Ticket]
-    R2 --> W[Store Confluence Page]
-    
-    S --> P
-    T --> X[Use Mock/Fallback Data]
-    U --> P
-    X --> Y[Generate Fallback Ticket]
-    
-    V --> Z[More Issues?]
-    W --> Z
-    Y --> Z
-    
-    Z -->|Yes| N
-    Z -->|No| AA[📊 MCP_CREATION_COMPLETE Trace]
-    
-    AA --> BB[Build Final Results]
-    BB --> CC{All Successful?}
-    
-    CC -->|Success| DD[✅ WORKFLOW_SUCCESS Trace]
-    CC -->|Partial/Error| EE[⚠️ WORKFLOW_ERROR Trace]
-    
-    DD --> FF[Return Complete Results]
-    EE --> FF
-    G --> FF
-    M --> FF
-    
-    FF --> GG[Output: JIRA Tickets + Confluence Pages]
-    GG --> HH[End: Dual Documentation Created]
-    
-    %% Enhanced Styling for v1.4.3
-    classDef startEnd fill:#e1f5fe,stroke:#01579b,stroke-width:3px
-    classDef process fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef decision fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef llm fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-    classDef mcp fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-    classDef trace fill:#e3f2fd,stroke:#0d47a1,stroke-width:2px
-    classDef success fill:#f1f8e9,stroke:#33691e,stroke-width:2px
-    classDef error fill:#ffebee,stroke:#c62828,stroke-width:2px
-    classDef dual fill:#fef7ff,stroke:#4a148c,stroke-width:2px
-    
-    %% Apply styles to main workflow
-    class A,HH startEnd
-    class C,D,I,O,BB process
-    class E,K,Q,CC decision
-    class F,H,L llm
-    class P,N,O mcp
-    class B,J,AA,DD,EE trace
-    class R1,R2,V,W success
-    class G,T,U,Y error
-    class R,FF,GG dual
-    
-    %% Version badge
-    subgraph VERSION ["🚀 Meeting Notes JIRA Agent v1.4.3"]
-        VERSION1[✅ Dual Output: JIRA + Confluence]
-        VERSION2[✅ UiPath Native Tracing]
-        VERSION3[✅ Multi-Issue Support]
-        VERSION4[✅ Enhanced Error Handling]
-        VERSION5[✅ Telemetry Optimization]
-        VERSION6[🎯 Production Ready]
-    end
-
-%% Enhanced Configuration & Telemetry
-subgraph CONFIG ["v1.4.3 Configuration"]
-    CONFIG1[OPENAI_API_KEY - GPT-4o-mini]
-    CONFIG2[UIPATH_ACCESS_TOKEN - Bearer Auth]
-    CONFIG3[UIPATH_MCP_URL - Agent Hub Endpoint]
-    CONFIG4[DEFAULT_JIRA_PROJECT - Jira-Test Project]
-    CONFIG5[UIPATH_TELEMETRY_ENABLED=true]
-    CONFIG6[OTEL_SDK_DISABLED=true - No Azure Monitor]
-end
-
-%% Dual Output Data Structures
-subgraph DATA ["Enhanced Data Flow"]
-    DATA1[Input: meeting_notes, meeting_title]
-    DATA2[LLM Extract: Multiple Issues Array]
-    DATA3[Each Issue: summary, description, issue_type, priority]
-    DATA4[MCP Response: jira_key + confluence_url]
-    DATA5[Output: jira_tickets array, confluence_pages array]
-    DATA6[Final: status, total_tickets, total_pages]
-end
-
-%% UiPath Trace System
-subgraph TRACE ["UiPath Native Tracing"]
-    TRACE1[WORKFLOW_START - Meeting preview]
-    TRACE2[LLM_ANALYSIS_COMPLETE - Issues found]
-    TRACE3[MCP_CREATION_COMPLETE - Tickets created]
-    TRACE4[WORKFLOW_SUCCESS/ERROR - Final status]
-    TRACE5[JSON structured trace data]
-    TRACE6[Visible in Orchestrator UI]
-end
-
-%% Enhanced MCP Integration
-subgraph MCP ["Dual-Format MCP Integration"]
-    MCP1[Direct Payload - Agent Hub Format]
-    MCP2[JSON-RPC 2.0 Fallback]
-    MCP3[Multi-Attempt Retry Logic]
-    MCP4[Bearer Token + Timeout Handling]
-    MCP5[Dual Response Parser]
-    MCP6[Real-time JIRA + Confluence Creation]
-end
-
-%% Advanced LLM Processing
-subgraph LLM ["OpenAI Enhanced Processing"]
-    LLM1[GPT-4o-mini - Latest Model]
-    LLM2[Multi-Issue Extraction]
-    LLM3[Priority & Type Classification]
-    LLM4[Structured JSON Output]
-    LLM5[Error Handling & Fallbacks]
-end
-
-%% Bug Fixes & Improvements
-subgraph FIXES ["v1.4.3 Bug Fixes"]
-    FIX1[✅ Fixed Fallback Ticket Bug]
-    FIX2[✅ String/Object Handling in Traces]
-    FIX3[✅ Dual Output Support]
-    FIX4[✅ Telemetry Conflict Resolution]
-    FIX5[✅ Unicode Encoding Support]
-    FIX6[✅ Proper jira_key Assignment]
-end
-
-%% Connect all subgraphs to main flow
-C -.-> CONFIG
-F -.-> LLM
-B -.-> TRACE1
-J -.-> TRACE2
-AA -.-> TRACE3
-DD -.-> TRACE4
-L -.-> MCP
-A -.-> DATA1
-GG -.-> DATA5
-HH -.-> FIXES
+    class A input
+    class B,C llm
+    class D,E,F mcp
+    class G output
+    class H success
